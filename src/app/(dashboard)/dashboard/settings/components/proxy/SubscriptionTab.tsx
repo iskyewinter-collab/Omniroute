@@ -16,6 +16,7 @@ interface SubscriptionRecord {
   updateIntervalMinutes: number;
   controlUrl: string | null;
   coreConfigPath: string | null;
+  coreBinaryPath: string | null;
   hasControlSecret: boolean;
   selectorMinGapSeconds: number;
   selectorLastSwitchAt: string | null;
@@ -44,6 +45,7 @@ type FormState = {
   localCoreEndpoint: string;
   controlUrl: string;
   coreConfigPath: string;
+  coreBinaryPath: string;
   controlSecret: string;
   selectorMinGapSeconds: number;
   updateIntervalMinutes: number;
@@ -58,6 +60,7 @@ const EMPTY_FORM: FormState = {
   localCoreEndpoint: "",
   controlUrl: "",
   coreConfigPath: "",
+  coreBinaryPath: "",
   controlSecret: "",
   selectorMinGapSeconds: 60,
   updateIntervalMinutes: 60,
@@ -204,6 +207,7 @@ export default function SubscriptionTab() {
       localCoreEndpoint: sub.localCoreEndpoint ?? "",
       controlUrl: sub.controlUrl ?? "",
       coreConfigPath: sub.coreConfigPath ?? "",
+      coreBinaryPath: sub.coreBinaryPath ?? "",
       controlSecret: "",
       selectorMinGapSeconds: sub.selectorMinGapSeconds ?? 60,
       updateIntervalMinutes: sub.updateIntervalMinutes,
@@ -229,6 +233,7 @@ export default function SubscriptionTab() {
         localCoreEndpoint: form.localCoreEndpoint.trim() || null,
         controlUrl: form.controlUrl.trim() || null,
         coreConfigPath: form.coreConfigPath.trim() || null,
+        coreBinaryPath: form.coreBinaryPath.trim() || null,
         selectorMinGapSeconds: Number(form.selectorMinGapSeconds) || 60,
         updateIntervalMinutes: Number(form.updateIntervalMinutes) || 60,
         enabled: form.enabled,
@@ -513,6 +518,19 @@ export default function SubscriptionTab() {
           </div>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-text-muted">{t("proxySubscription.coreBinaryPath")}</span>
+              <input
+                className="rounded border border-border bg-surface px-2 py-1.5 text-text outline-none focus:border-primary"
+                value={form.coreBinaryPath}
+                onChange={(e) => setForm({ ...form, coreBinaryPath: e.target.value })}
+                placeholder={t("proxySubscription.coreBinaryPathPlaceholder")}
+              />
+              <span className="text-xs text-text-muted">
+                {t("proxySubscription.coreBinaryPathHelp")}
+              </span>
+            </label>
+
             <label className="flex flex-col gap-1 text-sm">
               <span className="text-text-muted">{t("proxySubscription.selectorMinGap")}</span>
               <input

@@ -21,6 +21,7 @@
  */
 import { decodeUserinfo } from "@/shared/utils/decodeUserinfo";
 import { randomUUID } from "crypto";
+import fs from "node:fs";
 import { getDbInstance } from "../db/core";
 import { backupDbFile } from "../db/backup";
 import { encrypt } from "../db/encryption";
@@ -43,6 +44,7 @@ import { resolveTargetScopes } from "./scopes";
 import { clampSelectorGapSeconds, setAnyControlUrlConfigured } from "./selectorTrigger";
 import { stripSelectorSuffix } from "./selectorEndpoint";
 import { generateForSubscription } from "./coreConfig/sync";
+import { removeSubscriptionSideFiles } from "./coreConfig/apply";
 import {
   isSubscriptionFetchUrlAllowed,
   isIpLiteral,
@@ -69,7 +71,8 @@ export type ProxySubscriptionErrorCode =
   | "LOCAL_CORE_ENDPOINT_INVALID"
   | "NEEDS_CORE_NOT_CONFIGURED"
   | "NO_USABLE_NODES"
-  | "SELECTOR_SWITCH_FAILED";
+  | "SELECTOR_SWITCH_FAILED"
+  | "CORE_CONFIG_NOT_APPLIED";
 
 /** Encode a user-facing error as `{ code, detail? }` for i18n on the client. */
 export function subscriptionErrorCode(code: ProxySubscriptionErrorCode, detail?: string): string {
@@ -87,6 +90,7 @@ export interface ProxySubscriptionRecord {
   updateIntervalMinutes: number;
   controlUrl: string | null;
   coreConfigPath: string | null;
+  coreBinaryPath: string | null;
   hasControlSecret: boolean;
   selectorMinGapSeconds: number;
   selectorLastSwitchAt: string | null;
@@ -113,6 +117,7 @@ export interface ProxySubscriptionPayload {
   updateIntervalMinutes?: number;
   controlUrl?: string | null;
   coreConfigPath?: string | null;
+  coreBinaryPath?: string | null;
   controlSecret?: string | null;
   selectorMinGapSeconds?: number;
 }
@@ -200,6 +205,7 @@ function mapSubscriptionRow(row: unknown): ProxySubscriptionRecord {
     mode: r.mode === "rule" ? "rule" : "global",
     ruleProviders: parseList(r.rule_providers),
     localCoreEndpoint: typeof r.local_core_endpoint === "string" ? r.local_core_endpoint : null,
+    coreBinaryPath: typeof r.core_binary_path === "string" ? r.core_binary_path : null,
     updateIntervalMinutes: Number(r.update_interval_minutes) || 60,
     lastFetchedAt: typeof r.last_fetched_at === "string" ? r.last_fetched_at : null,
     status: (r.status as ProxySubscriptionStatus) || "empty",
@@ -218,7 +224,7 @@ export async function listSubscriptions(): Promise<ProxySubscriptionRecord[]> {
   const db = getDbInstance();
   const rows = db
     .prepare(
-      "SELECT id, name, url, enabled, mode, rule_providers, local_core_endpoint, update_interval_minutes, control_url, core_config_path, control_secret_enc, selector_min_gap_seconds, selector_last_switch_at, selector_last_switch_result, selector_last_switch_member, selector_last_switch_kind, last_fetched_at, status, error, last_nodes, last_error_at, consecutive_failures, created_at, updated_at FROM proxy_subscriptions ORDER BY datetime(updated_at) DESC, name ASC"
+      "SELECT id, name, url, enabled, mode, rule_providers, local_core_endpoint, update_interval_minutes, control_url, core_config_path, core_binary_path, control_secret_enc, selector_min_gap_seconds, selector_last_switch_at, selector_last_switch_result, selector_last_switch_member, selector_last_switch_kind, last_fetched_at, status, error, last_nodes, last_error_at, consecutive_failures, created_at, updated_at FROM proxy_subscriptions ORDER BY datetime(updated_at) DESC, name ASC"
     )
     .all();
   return rows.map(mapSubscriptionRow);
@@ -228,7 +234,7 @@ export async function getSubscriptionById(id: string): Promise<ProxySubscription
   const db = getDbInstance();
   const row = db
     .prepare(
-      "SELECT id, name, url, enabled, mode, rule_providers, local_core_endpoint, update_interval_minutes, control_url, core_config_path, control_secret_enc, selector_min_gap_seconds, selector_last_switch_at, selector_last_switch_result, selector_last_switch_member, selector_last_switch_kind, last_fetched_at, status, error, last_nodes, last_error_at, consecutive_failures, created_at, updated_at FROM proxy_subscriptions WHERE id = ?"
+      "SELECT id, name, url, enabled, mode, rule_providers, local_core_endpoint, update_interval_minutes, control_url, core_config_path, core_binary_path, control_secret_enc, selector_min_gap_seconds, selector_last_switch_at, selector_last_switch_result, selector_last_switch_member, selector_last_switch_kind, last_fetched_at, status, error, last_nodes, last_error_at, consecutive_failures, created_at, updated_at FROM proxy_subscriptions WHERE id = ?"
     )
     .get(id);
   return row ? mapSubscriptionRow(row) : null;
@@ -243,6 +249,7 @@ export async function createSubscription(
   const db = getDbInstance();
   const controlUrl = payload.controlUrl ?? null;
   const coreConfigPath = payload.coreConfigPath ?? null;
+  const coreBinaryPath = payload.coreBinaryPath ?? null;
   const controlSecretEnc =
     payload.controlSecret != null && payload.controlSecret.length > 0
       ? ((encrypt(payload.controlSecret) ?? null) as string | null)
@@ -250,8 +257,8 @@ export async function createSubscription(
   const gapSeconds = clampSelectorGapSeconds(payload.selectorMinGapSeconds ?? 60);
   db.prepare(
     `INSERT INTO proxy_subscriptions
-      (id, name, url, enabled, mode, rule_providers, local_core_endpoint, update_interval_minutes, control_url, core_config_path, control_secret_enc, selector_min_gap_seconds, status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'empty', ?, ?)`
+      (id, name, url, enabled, mode, rule_providers, local_core_endpoint, update_interval_minutes, control_url, core_config_path, core_binary_path, control_secret_enc, selector_min_gap_seconds, status, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'empty', ?, ?)`
   ).run(
     id,
     payload.name,
@@ -263,6 +270,7 @@ export async function createSubscription(
     payload.updateIntervalMinutes || 60,
     controlUrl,
     coreConfigPath,
+    coreBinaryPath,
     controlSecretEnc,
     gapSeconds,
     now,
@@ -280,9 +288,11 @@ export async function createSubscription(
 function readControlFields(
   payload: Partial<ProxySubscriptionPayload>,
   existing: ProxySubscriptionRecord
-): { controlUrl: string | null; gapSeconds: number } {
+): { controlUrl: string | null; coreBinaryPath: string | null; gapSeconds: number } {
   return {
     controlUrl: payload.controlUrl !== undefined ? payload.controlUrl : existing.controlUrl,
+    coreBinaryPath:
+      payload.coreBinaryPath !== undefined ? payload.coreBinaryPath : existing.coreBinaryPath,
     gapSeconds: clampSelectorGapSeconds(
       payload.selectorMinGapSeconds ?? existing.selectorMinGapSeconds
     ),
@@ -307,6 +317,7 @@ function persistSubscriptionRow(
     updateIntervalMinutes: number;
     controlUrl: string | null;
     coreConfigPath: string | null;
+    coreBinaryPath: string | null;
     controlSecretEnc: string | null | undefined;
     gapSeconds: number;
     now: string;
@@ -315,7 +326,7 @@ function persistSubscriptionRow(
   if (args.controlSecretEnc === undefined) {
     db.prepare(
       `UPDATE proxy_subscriptions
-         SET name = ?, url = ?, enabled = ?, mode = ?, rule_providers = ?, local_core_endpoint = ?, update_interval_minutes = ?, control_url = ?, core_config_path = ?, selector_min_gap_seconds = ?, updated_at = ?
+         SET name = ?, url = ?, enabled = ?, mode = ?, rule_providers = ?, local_core_endpoint = ?, update_interval_minutes = ?, control_url = ?, core_config_path = ?, core_binary_path = ?, selector_min_gap_seconds = ?, updated_at = ?
        WHERE id = ?`
     ).run(
       args.name,
@@ -327,6 +338,7 @@ function persistSubscriptionRow(
       args.updateIntervalMinutes,
       args.controlUrl,
       args.coreConfigPath,
+      args.coreBinaryPath,
       args.gapSeconds,
       args.now,
       args.id
@@ -334,7 +346,7 @@ function persistSubscriptionRow(
   } else {
     db.prepare(
       `UPDATE proxy_subscriptions
-         SET name = ?, url = ?, enabled = ?, mode = ?, rule_providers = ?, local_core_endpoint = ?, update_interval_minutes = ?, control_url = ?, core_config_path = ?, control_secret_enc = ?, selector_min_gap_seconds = ?, updated_at = ?
+         SET name = ?, url = ?, enabled = ?, mode = ?, rule_providers = ?, local_core_endpoint = ?, update_interval_minutes = ?, control_url = ?, core_config_path = ?, core_binary_path = ?, control_secret_enc = ?, selector_min_gap_seconds = ?, updated_at = ?
        WHERE id = ?`
     ).run(
       args.name,
@@ -346,6 +358,7 @@ function persistSubscriptionRow(
       args.updateIntervalMinutes,
       args.controlUrl,
       args.coreConfigPath,
+      args.coreBinaryPath,
       args.controlSecretEnc,
       args.gapSeconds,
       args.now,
@@ -372,7 +385,8 @@ async function refreshAfterUpdate(
       enabledChanged ||
       payload.url !== undefined ||
       payload.localCoreEndpoint !== undefined ||
-      payload.coreConfigPath !== undefined
+      payload.coreConfigPath !== undefined ||
+      payload.coreBinaryPath !== undefined
     ) {
       // Same scopes: just refresh nodes (re-applies idempotently to same scopes).
       await syncSubscription(id);
@@ -391,7 +405,7 @@ export async function updateSubscription(
   const existing = await getSubscriptionById(id);
   if (!existing) return null;
   const db = getDbInstance();
-  const { controlUrl, gapSeconds } = readControlFields(payload, existing);
+  const { controlUrl, coreBinaryPath, gapSeconds } = readControlFields(payload, existing);
   const now = new Date().toISOString();
   const enabledChanged = payload.enabled !== undefined && payload.enabled !== existing.enabled;
   const enabled =
@@ -419,6 +433,7 @@ export async function updateSubscription(
     controlUrl,
     coreConfigPath:
       payload.coreConfigPath !== undefined ? payload.coreConfigPath : existing.coreConfigPath,
+    coreBinaryPath,
     controlSecretEnc,
     gapSeconds,
     now,
@@ -442,6 +457,9 @@ export async function deleteSubscription(id: string): Promise<boolean> {
   await unapplySubscription(id);
   // Remove subscription-sourced proxy rows (force-clears their assignments).
   const db = getDbInstance();
+  const doomed = db
+    .prepare("SELECT core_config_path FROM proxy_subscriptions WHERE id = ?")
+    .get(id) as { core_config_path?: unknown } | undefined;
   const rows = db
     .prepare("SELECT id FROM proxy_registry WHERE subscription_id = ?")
     .all(id) as Array<{ id: string }>;
@@ -453,6 +471,11 @@ export async function deleteSubscription(id: string): Promise<boolean> {
     }
   }
   const res = db.prepare("DELETE FROM proxy_subscriptions WHERE id = ?").run(id);
+  // Best-effort: remove the side files this subscription owned. A missing
+  // or locked file must not fail the delete (row already gone).
+  if (typeof doomed?.core_config_path === "string") {
+    removeSubscriptionSideFiles(fs, doomed.core_config_path, id);
+  }
   // Cache maintenance: a delete may have removed the last
   // control_url — reset to lazy so the next trigger re-reads (never stale-true).
   if (res.changes > 0) setAnyControlUrlConfigured(null);
@@ -891,9 +914,12 @@ async function syncSubscriptionUnsafe(id: string): Promise<SyncResult> {
 
   const lastNodes = redactedNodeSummary(parsed);
 
-  // Opt-in core-config generation (beside-file only, never the adopted
-  // file). Skipped when an earlier warning already owns the `error` column —
-  // the skip is logged server-side so a stale beside-file never goes silent.
+  // Opt-in core-config generation. Without a binary path the beside-file
+  // is written directly, never the adopted file. With one, the rendered
+  // text is verified with the native check before replacing the adopted
+  // file (miss → beside-file + warning). Skipped when an earlier warning
+  // already owns the `error` column — the skip is logged server-side so a
+  // stale beside-file never goes silent.
   if (sub.coreConfigPath) {
     if (!warning) {
       const generated = await generateForSubscription(sub, parsed);
