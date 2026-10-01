@@ -160,3 +160,91 @@ test("earlier warning wins: generation skipped, skip logged, prior error kept", 
   assert.ok(src.includes("core config generation skipped"));
   void sync;
 });
+
+test("binary path routes through the native check (pass replaces, miss warns beside)", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-core-verify-"));
+  const sync = await import("../../src/lib/proxySubscription/coreConfig/sync.ts");
+  const renderers = await import("../../src/lib/proxySubscription/coreConfig/renderers.ts");
+  const apply = await import("../../src/lib/proxySubscription/coreConfig/apply.ts");
+  const origRender = renderers.RENDERERS[renderers.DEFAULT_CORE];
+  (renderers.RENDERERS as Record<string, unknown>)[renderers.DEFAULT_CORE] = () => ({
+    ok: true,
+    text: JSON.stringify({ inbounds: [], outbounds: [{ tag: "omniroute-probe" }] }),
+    unchanged: false,
+    skipped: [],
+  });
+  const target = path.join(dir, "core.json");
+  fs.writeFileSync(target, JSON.stringify({ inbounds: [], outbounds: [] }));
+  try {
+    // No binary: beside-file written directly, adopted untouched.
+    const plain = await sync.generateForSubscription(
+      { coreConfigPath: target, coreBinaryPath: null, localCoreEndpoint: ENDPOINTS },
+      singBoxFeed()
+    );
+    assert.equal(plain, null);
+    assert.ok(fs.existsSync(`${target}.generated`));
+    // Binary configured: applyRendered runs (fake binary that always passes).
+    // Proof it went through the check (not the beside-direct path): the
+    // adopted file now holds the rendered text, and the stale beside copy
+    // from the first call is gone.
+    const fakeBin = path.join(dir, "sing-box");
+    fs.writeFileSync(fakeBin, "#!/bin/sh\nexit 0\n");
+    fs.chmodSync(fakeBin, 0o755);
+    const verified = await sync.generateForSubscription(
+      {
+        coreConfigPath: target,
+        coreBinaryPath: fakeBin,
+        localCoreEndpoint: ENDPOINTS,
+        id: "sub-verify",
+      },
+      singBoxFeed()
+    );
+    assert.equal(verified, null);
+    assert.ok(fs.readFileSync(target, "utf8").includes("omniroute-probe"));
+    assert.ok(!fs.existsSync(`${target}.generated`));
+    void apply;
+  } finally {
+    (renderers.RENDERERS as Record<string, unknown>)[renderers.DEFAULT_CORE] = origRender;
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("delete removes the adopted and beside files, missing files do not fail", async () => {
+  const apply = await import("../../src/lib/proxySubscription/coreConfig/apply.ts");
+  // Unit-level: removeSubscriptionSideFiles unlinks adopted + beside,
+  // best-effort (missing files do not throw).
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-sidefiles-"));
+  try {
+    const target = path.join(dir, "core.json");
+    fs.writeFileSync(target, "{}");
+    fs.writeFileSync(`${target}.generated`, "{}");
+    const calls: string[] = [];
+    apply.removeSubscriptionSideFiles(
+      {
+        unlinkSync: (p: string) => {
+          calls.push(p);
+          fs.unlinkSync(p);
+        },
+      },
+      target,
+      "sub-del"
+    );
+    assert.deepEqual(calls, [target, `${target}.generated`]);
+    assert.ok(!fs.existsSync(target));
+    // Missing files: no throw, still attempted.
+    const noop = { unlinkSync: (p: string) => void calls.push(p) };
+    apply.removeSubscriptionSideFiles(noop, target, "sub-del");
+    assert.equal(calls.length, 4);
+    // Empty path: no-op.
+    apply.removeSubscriptionSideFiles(noop, "  ", "sub-del");
+    assert.equal(calls.length, 4);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+  // The service delete path calls it with the stored adopted path.
+  const src = fs.readFileSync(
+    new URL("../../src/lib/proxySubscription/subscriptionService.ts", import.meta.url),
+    "utf8"
+  );
+  assert.ok(src.includes("removeSubscriptionSideFiles"));
+});

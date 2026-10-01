@@ -396,3 +396,107 @@ test("PATCH proxy-subscriptions/:id — bad coreConfigPath returns 400", async (
   const body = (await res.json()) as { error?: string };
   assert.equal(body.error, "coreConfigPath is not allowed (not_absolute)");
 });
+// ═════════════════════════════════════════════════════════════════════════════
+// coreBinaryPath — create + update validate the binary path
+// ═════════════════════════════════════════════════════════════════════════════
+
+test("POST proxy-subscriptions — coreBinaryPath accepts an allow-listed absolute path", async () => {
+  const req = jsonRequest("http://localhost/api/v1/management/proxy-subscriptions", {
+    name: "core-binary-ok",
+    url: "https://example.com/sub.txt",
+    coreBinaryPath: "/usr/bin/sing-box",
+  });
+  const res = await collectionRoute.POST(req);
+
+  assert.equal(res.status, 201);
+  const body = (await res.json()) as { coreBinaryPath?: string | null };
+  assert.equal(body.coreBinaryPath, "/usr/bin/sing-box");
+});
+
+test("POST proxy-subscriptions — coreBinaryPath rejects a relative path (400)", async () => {
+  const req = jsonRequest("http://localhost/api/v1/management/proxy-subscriptions", {
+    name: "core-binary-relative",
+    url: "https://example.com/sub.txt",
+    coreBinaryPath: "relative/sing-box",
+  });
+  const res = await collectionRoute.POST(req);
+
+  assert.equal(res.status, 400);
+  const body = (await res.json()) as { error?: string };
+  assert.match(body.error ?? "", /coreBinaryPath is not allowed \(not_absolute\)/);
+});
+
+test("POST proxy-subscriptions — coreBinaryPath rejects a trapped path (400)", async () => {
+  for (const trapped of [
+    "/opt/sb/../sing-box",
+    "/bin/sing-box\0",
+    "/usr/bin/unknown-core",
+    "/usr/bin/sing-box; rm -rf /",
+  ]) {
+    const req = jsonRequest("http://localhost/api/v1/management/proxy-subscriptions", {
+      name: "core-binary-trapped",
+      url: "https://example.com/sub.txt",
+      coreBinaryPath: trapped,
+    });
+    const res = await collectionRoute.POST(req);
+    assert.equal(res.status, 400, trapped);
+  }
+});
+
+test("POST proxy-subscriptions — coreBinaryPath rejects an overlong path (400)", async () => {
+  const req = jsonRequest("http://localhost/api/v1/management/proxy-subscriptions", {
+    name: "core-binary-long",
+    url: "https://example.com/sub.txt",
+    coreBinaryPath: `/${"a".repeat(1024)}`,
+  });
+  const res = await collectionRoute.POST(req);
+
+  assert.equal(res.status, 400);
+  const body = (await res.json()) as { error?: string };
+  assert.match(body.error ?? "", /coreBinaryPath is not allowed \(too_long\)/);
+});
+
+test("PATCH proxy-subscriptions/:id — coreBinaryPath updates and clears (200)", async () => {
+  const fixture = await createValidSubscription("core-binary-patch");
+  const setReq = jsonRequest(
+    `http://localhost/api/v1/management/proxy-subscriptions/${fixture.id}`,
+    { coreBinaryPath: "/usr/bin/sing-box" },
+    "PATCH"
+  );
+  const setRes = await itemRoute.PATCH(setReq, {
+    params: Promise.resolve({ id: fixture.id }),
+  });
+  assert.equal(setRes.status, 200);
+  assert.equal(
+    ((await setRes.json()) as { coreBinaryPath?: string | null }).coreBinaryPath,
+    "/usr/bin/sing-box"
+  );
+
+  const clearReq = jsonRequest(
+    `http://localhost/api/v1/management/proxy-subscriptions/${fixture.id}`,
+    { coreBinaryPath: "" },
+    "PATCH"
+  );
+  const clearRes = await itemRoute.PATCH(clearReq, {
+    params: Promise.resolve({ id: fixture.id }),
+  });
+  assert.equal(clearRes.status, 200);
+  assert.equal(
+    ((await clearRes.json()) as { coreBinaryPath?: string | null }).coreBinaryPath,
+    null
+  );
+});
+
+test("PATCH proxy-subscriptions/:id — coreBinaryPath rejects a non-allow-listed binary (400)", async () => {
+  const fixture = await createValidSubscription("core-binary-patch-bad");
+  const req = jsonRequest(
+    `http://localhost/api/v1/management/proxy-subscriptions/${fixture.id}`,
+    { coreBinaryPath: "/usr/bin/mihomo" },
+    "PATCH"
+  );
+  const res = await itemRoute.PATCH(req, { params: Promise.resolve({ id: fixture.id }) });
+
+  assert.equal(res.status, 400);
+  const body = (await res.json()) as { error?: string };
+  assert.match(body.error ?? "", /coreBinaryPath is not allowed \(not_allowlisted\)/);
+});

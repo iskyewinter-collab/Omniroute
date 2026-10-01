@@ -12,7 +12,7 @@
  */
 import { z } from "zod";
 import type { ProxySubscriptionPayload } from "./subscriptionService";
-import { isCoreConfigPathAllowed } from "./coreConfig/pathGuard";
+import { isCoreBinaryPathAllowed, isCoreConfigPathAllowed } from "./coreConfig/pathGuard";
 import { isSelectorControlUrlAllowed } from "./selectorGuard";
 import { clampSelectorGapSeconds } from "./selectorTrigger";
 
@@ -41,6 +41,28 @@ function checkControlUrl(
     return z.NEVER;
   }
   return controlUrl;
+}
+
+function readCoreBinaryPath(b: Record<string, unknown>): string | null | undefined {
+  if (b.coreBinaryPath === undefined) return undefined;
+  if (typeof b.coreBinaryPath !== "string" || !b.coreBinaryPath.trim()) return null;
+  return b.coreBinaryPath.trim();
+}
+
+function checkCoreBinaryPath(
+  coreBinaryPath: string | null | undefined,
+  ctx: z.RefinementCtx
+): string | null | undefined {
+  if (coreBinaryPath === undefined || coreBinaryPath === null) return coreBinaryPath;
+  const verdict = isCoreBinaryPathAllowed(coreBinaryPath);
+  if (!verdict.allowed) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `coreBinaryPath is not allowed (${verdict.reason})`,
+    });
+    return z.NEVER;
+  }
+  return coreBinaryPath;
 }
 
 function readControlSecret(b: Record<string, unknown>): string | null | undefined {
@@ -109,6 +131,18 @@ function requireRuleProviders(
   return ruleProviders;
 }
 
+/** Read + validate both optional core path fields (config + binary). */
+function checkCorePaths(
+  b: Record<string, unknown>,
+  ctx: z.RefinementCtx
+): { coreConfigPath: string | null; coreBinaryPath: string | null } | null {
+  const coreConfigPath = checkCoreConfigPath(readCoreConfigPath(b), ctx);
+  if (coreConfigPath === z.NEVER) return null;
+  const coreBinaryPath = checkCoreBinaryPath(readCoreBinaryPath(b), ctx);
+  if (coreBinaryPath === z.NEVER) return null;
+  return { coreConfigPath: coreConfigPath ?? null, coreBinaryPath: coreBinaryPath ?? null };
+}
+
 /** POST /api/v1/management/proxy-subscriptions body — mirrors the removed `parsePayload()`. */
 export const proxySubscriptionCreateSchema = z
   .unknown()
@@ -133,8 +167,8 @@ export const proxySubscriptionCreateSchema = z
 
     const controlUrl = checkControlUrl(readControlUrl(b), ctx);
     if (controlUrl === z.NEVER) return z.NEVER;
-    const coreConfigPath = checkCoreConfigPath(readCoreConfigPath(b), ctx);
-    if (coreConfigPath === z.NEVER) return z.NEVER;
+    const corePaths = checkCorePaths(b, ctx);
+    if (!corePaths) return z.NEVER;
     const controlSecret = readControlSecret(b);
     const selectorMinGapSeconds = readGap(b);
 
@@ -147,7 +181,8 @@ export const proxySubscriptionCreateSchema = z
       updateIntervalMinutes,
       enabled,
       controlUrl: controlUrl ?? null,
-      coreConfigPath: coreConfigPath ?? null,
+      coreConfigPath: corePaths.coreConfigPath,
+      coreBinaryPath: corePaths.coreBinaryPath,
       controlSecret: controlSecret ?? null,
       selectorMinGapSeconds,
     };
@@ -197,6 +232,11 @@ export const proxySubscriptionUpdateSchema = z
       const coreConfigPath = checkCoreConfigPath(readCoreConfigPath(b), ctx);
       if (coreConfigPath === z.NEVER) return z.NEVER;
       payload.coreConfigPath = coreConfigPath ?? null;
+    }
+    if (b.coreBinaryPath !== undefined) {
+      const coreBinaryPath = checkCoreBinaryPath(readCoreBinaryPath(b), ctx);
+      if (coreBinaryPath === z.NEVER) return z.NEVER;
+      payload.coreBinaryPath = coreBinaryPath ?? null;
     }
 
     return payload;
