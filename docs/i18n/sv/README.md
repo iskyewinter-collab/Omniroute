@@ -1737,7 +1737,7 @@ MIT-licens – se [LICENSE](LICENSE) för mer information.
 
 **[⬆ Tillbaka till toppen](#-omniroute)** · Byggd med ❤️ för AI-communityn kring öppen källkod.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT-licens · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT-licens · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- GitHub Discussions är aktiverat för frågor och svar i communityn -->

@@ -1729,7 +1729,7 @@ Liċenzja MIT - ara [LICENSE](LICENSE) għad-dettalji.
 
 **[⬆ Lura fil-bidu](#-omniroute)** · Mibni b’❤️ għall-komunità tal-IA b’sors miftuħ.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · Liċenzja MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · Liċenzja MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- GitHub Discussions attivat għal mistoqsijiet u tweġibiet mill-komunità -->

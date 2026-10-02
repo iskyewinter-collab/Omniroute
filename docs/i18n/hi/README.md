@@ -1738,7 +1738,7 @@ MIT लाइसेंस - विवरण के लिए [LICENSE](LICENSE) 
 
 **[⬆ शीर्ष पर वापस जाएँ](#-omniroute)** · ओपन-सोर्स AI समुदाय के लिए ❤️ के साथ निर्मित।
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT लाइसेंस · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT लाइसेंस · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- सामुदायिक प्रश्नोत्तर के लिए GitHub Discussions सक्षम हैं -->

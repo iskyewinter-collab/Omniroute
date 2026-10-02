@@ -1729,7 +1729,7 @@ OmniRoute ឈរនៅលើស្មារបស់អ្នកជំនាញ�
 
 **[⬆ ត្រឡប់ទៅផ្នែកខាងលើ](#-omniroute)** · បង្កើតឡើងដោយ ❤️ សម្រាប់សហគមន៍ AI ប្រភពបើកចំហ។
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · អាជ្ញាបណ្ណ MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · អាជ្ញាបណ្ណ MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- បានបើកដំណើរការ GitHub Discussions សម្រាប់សំណួរ និងចម្លើយរបស់សហគមន៍ -->
