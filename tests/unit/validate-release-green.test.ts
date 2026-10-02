@@ -549,3 +549,22 @@ test("the --full-ci loop classifies from the curated results, not a hardcoded ki
     "--full-ci must classify each ci.yml gate through fullCiKindFor()"
   );
 });
+
+test("extractCiGates: skips steps guarded to pull_request events (no PR range outside a PR)", () => {
+  const yaml = `
+jobs:
+  lint:
+    steps:
+      - run: npm run check:public-creds
+      - name: AI attribution
+        if: github.event_name == 'pull_request'
+        run: |
+          printf '%s' "$PR_BODY" > "$RUNNER_TEMP/pr-body.md"
+          npm run check:ai-attribution -- --range "$PR_BASE_SHA..$PR_HEAD_SHA"
+      - name: still local
+        if: github.event_name != 'pull_request'
+        run: npm run check:db-rules
+`;
+  const ids = extract(yaml).map((g) => g.id);
+  assert.deepEqual(ids, ["check:public-creds", "check:db-rules"]);
+});
