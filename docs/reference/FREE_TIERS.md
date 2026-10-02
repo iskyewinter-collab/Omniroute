@@ -288,8 +288,31 @@ sentence _"OpenCode's free tier can only be used from within OpenCode"_. This is
 request-scoped refusal (same verdict on every account for the same request shape), not a
 model ban or connection cooldown — OmniRoute classifies it as `project_route_error`, skips
 model lockout / cooldown, and (on the synthetic `noauth` path) pauses auto-combo re-selection
-for a short TTL. Ship requests that carry a non-empty tool list, `stream: true`, and the
+for a short TTL. Ship requests that carry the required tool list, `stream: true`, and the
 OpenCode session/UA headers (`opencodeFreeTierContract.ts`) or expect the 403.
+
+### The tools list is a fingerprint, not just a non-empty array (measured 2026-10-02)
+
+The upstream does not merely require `tools` to be non-empty: it requires the lowercase
+file-search quartet **`bash`, `glob`, `grep`, `read`** — all four, exactly lowercase. Measured
+live on `big-pickle` over `/chat/completions` (same result on `/responses` with
+`muse-spark-1.3-contributor-free`):
+
+| Request tools                                     | Result              |
+| ------------------------------------------------- | ------------------- |
+| none / empty array                                | 403 `FreeTierError` |
+| a single placeholder (`_noop`)                    | 403 `FreeTierError` |
+| one client tool only                              | 403 `FreeTierError` |
+| `Bash` only (wrong case)                          | 403 `FreeTierError` |
+| `bash` only, or `bash`+`glob`+`grep` (incomplete) | 403 `FreeTierError` |
+| `bash` + `glob` + `grep` + `read`                 | **200**             |
+
+Order is irrelevant, and extra tools alongside the quartet are accepted. A client that
+spells a member differently (`Bash` from Claude Code) must be **renamed, not duplicated** —
+sending both spellings passes only because the canonical one is present, so OmniRoute
+canonicalises the quartet on the way out and restores the caller's own spelling in the
+response (`open-sse/utils/opencodeFingerprint.ts`). The `Authorization` header is not part
+of the contract (the CLI identity headers alone pass); the `x-opencode-session` header is.
 
 ## What changed since the shipped catalog (`freeNote`)
 

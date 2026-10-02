@@ -63,6 +63,7 @@ import {
 } from "./opencodeGeoBlock.ts";
 import {
   attemptFor,
+  fingerprintRenamesFor,
   isGatedFreeTierRequest,
   isPremiumOpencodeModel,
   noteFreeTierOutcome,
@@ -70,6 +71,7 @@ import {
   rebuildJsonFromForcedStream,
   surfaceFromBaseUrl,
 } from "./opencodeFreeTierContract.ts";
+import { restoreFingerprintToolNames } from "../utils/opencodeFingerprint.ts";
 import {
   applyMuseSparkMinOutputTokens,
   createMuseSparkStreamFinishNormalizer,
@@ -355,12 +357,37 @@ export class OpencodeExecutor extends BaseExecutor {
     result: ExecutorExecuteResult
   ): ExecutorExecuteResult {
     noteFreeTierOutcome(attemptFor(input.body), "response" in result && !!result.response?.ok);
-    if (input.stream) return result;
+    // A gated request that had its quartet spelling canonicalised hands the caller its own
+    // spelling back (e.g. Claude Code's `Bash`), or the client would not recognise the
+    // tool_use name in the response it gets. Applied last, after the forced stream has been
+    // rebuilt into JSON, so one pass covers both the streaming and the buffered client.
+    const restored = (r: ExecutorExecuteResult): ExecutorExecuteResult =>
+      this.restoreFingerprintNames(input, r);
+    if (input.stream) return restored(result);
     if (!("response" in result) || !result.response) return result;
     // Non-null exactly when the contract applied: stands in for the old surface/model guard.
     const model = attemptFor(input.body)?.model;
     if (!model) return result;
     const response = rebuildJsonFromForcedStream(result.response, this._requestFormat, model);
+    return restored(response === result.response ? result : { ...result, response });
+  }
+
+  /**
+   * Hand the caller its own tool spellings back after the free-tier quartet was
+   * canonicalised on the way out (see `../utils/opencodeFingerprint.ts`). A request whose
+   * tools carried no renamed quartet member passes through with its identity intact.
+   *
+   * Split out of `finalizeForcedStream` so a path that already finalised its body — the
+   * park/replay arms, which must not charge `noteFreeTierOutcome` twice — can still restore
+   * the names without re-running the accounting.
+   */
+  private restoreFingerprintNames(
+    input: ExecuteInput,
+    result: ExecutorExecuteResult
+  ): ExecutorExecuteResult {
+    const renameMap = fingerprintRenamesFor(input.body);
+    if (!renameMap || !("response" in result) || !result.response) return result;
+    const response = restoreFingerprintToolNames(result.response, renameMap);
     return response === result.response ? result : { ...result, response };
   }
 
@@ -999,7 +1026,10 @@ export class OpencodeExecutor extends BaseExecutor {
                     this.logSkippedCooldownAccounts(log, cid, skippedCooldown);
                   }
                   noteReplayed();
-                  return this.normalizeMuseSparkResponse(input, p);
+                  return this.restoreFingerprintNames(
+                    input,
+                    this.normalizeMuseSparkResponse(input, p)
+                  );
                 }
                 if (p) {
                   discardResponseBody(abandonedResponse);
@@ -1007,7 +1037,10 @@ export class OpencodeExecutor extends BaseExecutor {
                     this.logSkippedCooldownAccounts(log, cid, skippedCooldown);
                   }
                   noteStoredFallback();
-                  return this.normalizeMuseSparkResponse(input, result);
+                  return this.restoreFingerprintNames(
+                    input,
+                    this.normalizeMuseSparkResponse(input, result)
+                  );
                 }
               }
             }
