@@ -17,6 +17,7 @@ import {
   toRegistryImageModels,
 } from "../services/adobeFireflyModels.ts";
 import { AI_HORDE_IMAGE_PROVIDER } from "./providers/registry/aihorde/imageModels.ts";
+import { GROK_BUILD_PROXY_BASE_URL } from "./grokBuild.ts";
 
 interface ImageModelEntry {
   id: string;
@@ -319,6 +320,17 @@ export const IMAGE_PROVIDERS: Record<string, ImageProviderConfig> = {
       { id: "grok-imagine-image-quality", name: "Grok Imagine Image Quality" },
       { id: "grok-imagine-image", name: "Grok Imagine Image" },
     ],
+    supportedSizes: ["1024x1024", "2048x2048"],
+  },
+
+  "grok-cli": {
+    id: "grok-cli",
+    alias: "gc",
+    baseUrl: `${GROK_BUILD_PROXY_BASE_URL}/images/generations`,
+    authType: "oauth",
+    authHeader: "bearer",
+    format: "grok-image",
+    models: [{ id: "grok-imagine-image", name: "Grok Imagine Image (OAuth)" }],
     supportedSizes: ["1024x1024", "2048x2048"],
   },
 

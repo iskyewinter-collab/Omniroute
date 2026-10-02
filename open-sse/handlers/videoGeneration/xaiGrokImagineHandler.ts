@@ -1,16 +1,7 @@
-/**
- * xAI Grok Imagine video generation: create async job → poll → MP4.
- * Reuses the stored xai provider Bearer apiKey (same credential the
- * image-generation "xai" entry in imageRegistry.ts already uses) — no
- * separate credential flow. Mirrors the DashScope create+poll shape in
- * videoGeneration.ts, adapted to xAI's request_id / status
- * ("pending"|"processing"|"done"|"failed") job shape
- * (https://docs.x.ai/developers/rest-api-reference/inference/videos).
- */
-
 import { isJsonObject } from "../../utils/kieTask.ts";
 import { saveCallLog } from "@/lib/usageDb";
 import { sanitizeErrorMessage } from "../../utils/error.ts";
+import { getGrokMediaToken, grokMediaHeaders } from "../grokMedia.ts";
 
 interface XaiVideoBody {
   prompt?: unknown;
@@ -38,70 +29,99 @@ function buildXaiVideoPayload(model: string, prompt: string, body: XaiVideoBody)
   return payload;
 }
 
+function xaiVideoErrorMessage(
+  data: { error?: { message?: unknown }; message?: unknown } | null,
+  fallback: string
+) {
+  return sanitizeErrorMessage(String(data?.error?.message || data?.message || fallback));
+}
+
 /** POST the create-job request; resolves to the request_id or a ready error message. */
 async function createXaiVideoJob({
   baseUrl,
   token,
   payload,
   log,
+  headers = {},
+  deadline,
 }: {
   baseUrl: string;
   token: string;
   payload: Record<string, unknown>;
   log?: XaiVideoLog | null;
-}): Promise<{ requestId?: string; error?: string }> {
+  headers?: Record<string, string>;
+  deadline: number;
+}): Promise<{ requestId?: string; error?: string; status?: number }> {
   const createRes = await fetch(`${baseUrl}/generations`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      ...headers,
     },
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
+    redirect: "error",
   });
   const createData = await createRes.json().catch(() => ({}));
   const requestId = createData?.request_id;
-  if (requestId) return { requestId: String(requestId) };
-
-  const errorMessage =
-    createData?.error?.message ||
-    createData?.message ||
-    "xAI video generation did not return request_id";
-  if (log) {
-    log.error("VIDEO", `xAI createJob failed: ${JSON.stringify(createData)}`);
+  if (createRes.ok && typeof requestId === "string" && /^[A-Za-z0-9_-]+$/.test(requestId)) {
+    return { requestId };
   }
-  return { error: String(errorMessage) };
+
+  const errorMessage = xaiVideoErrorMessage(
+    createData,
+    "xAI video generation did not return request_id"
+  );
+  if (log) {
+    log.error("VIDEO", `xAI createJob failed (${createRes.status}): ${errorMessage}`);
+  }
+  return {
+    error: errorMessage,
+    status: createRes.ok ? 502 : createRes.status,
+  };
 }
 
 type XaiPollOutcome =
   | { terminal: "done"; videoUrl?: string }
   | { terminal: "failed"; error?: unknown }
+  | { terminal: "error"; status: number; error: string }
   | { terminal: "timeout"; lastStatus: string };
 
-/**
- * Poll statusUrl/{request_id} until a terminal status or the deadline.
- * Date.now() is read only in the loop condition, so the caller keeps full
- * control over the timeout budget it computed from its own startTime.
- */
 async function pollXaiVideoJob({
   statusUrl,
   requestId,
   token,
   deadline,
   pollIntervalMs,
+  headers = {},
 }: {
   statusUrl: string;
   requestId: string;
   token: string;
   deadline: number;
   pollIntervalMs: number;
+  headers?: Record<string, string>;
 }): Promise<XaiPollOutcome> {
   let lastStatus = "pending";
   while (Date.now() < deadline) {
-    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.min(pollIntervalMs, Math.max(1, deadline - Date.now())))
+    );
+    if (Date.now() >= deadline) break;
     const pollRes = await fetch(`${statusUrl}/${requestId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...headers },
+      signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
+      redirect: "error",
     });
     const pollData = await pollRes.json().catch(() => ({}));
+    if (!pollRes.ok) {
+      return {
+        terminal: "error",
+        status: pollRes.status,
+        error: xaiVideoErrorMessage(pollData, `xAI video job ${requestId} polling failed`),
+      };
+    }
     lastStatus = pollData?.status || "pending";
 
     if (lastStatus === "done") return { terminal: "done", videoUrl: pollData?.video?.url };
@@ -119,8 +139,14 @@ function resolveXaiVideoOptions(
 ) {
   const baseUrl = providerConfig.baseUrl.replace(/\/$/, "");
   return {
-    timeoutMs: Number(body.timeout_ms) > 0 ? Number(body.timeout_ms) : 300000,
-    pollIntervalMs: Number(body.poll_interval_ms) > 0 ? Number(body.poll_interval_ms) : 2500,
+    timeoutMs:
+      Number.isFinite(Number(body.timeout_ms)) && Number(body.timeout_ms) > 0
+        ? Math.max(1, Math.floor(Math.min(Number(body.timeout_ms), 2147483647)))
+        : 300000,
+    pollIntervalMs:
+      Number.isFinite(Number(body.poll_interval_ms)) && Number(body.poll_interval_ms) > 0
+        ? Math.max(1, Math.floor(Math.min(Number(body.poll_interval_ms), 2147483647)))
+        : 2500,
     token: credentials?.apiKey || credentials?.accessToken,
     baseUrl,
     statusUrl: (providerConfig.statusUrl || baseUrl).replace(/\/$/, ""),
@@ -143,14 +169,24 @@ function buildXaiVideoResponse({
   startTime: number;
 }) {
   if (outcome.terminal === "failed") {
-    return { success: false, status: 502, error: String(outcome.error || "xAI video job failed") };
+    return {
+      success: false,
+      status: 502,
+      error: sanitizeErrorMessage(String(outcome.error || "xAI video job failed")),
+    };
+  }
+
+  if (outcome.terminal === "error") {
+    return { success: false, status: outcome.status, error: outcome.error };
   }
 
   if (outcome.terminal === "timeout") {
     return {
       success: false,
       status: 504,
-      error: `xAI video job ${requestId} timed out (status: ${outcome.lastStatus})`,
+      error: sanitizeErrorMessage(
+        `xAI video job ${requestId} timed out (status: ${outcome.lastStatus})`
+      ),
     };
   }
 
@@ -208,22 +244,27 @@ export async function handleXaiVideoGeneration({
   }
 
   try {
+    const requestToken = provider === "grok-cli" ? await getGrokMediaToken(credentials) : token;
+    const headers = provider === "grok-cli" ? grokMediaHeaders(requestToken) : {};
     const created = await createXaiVideoJob({
       baseUrl,
-      token,
+      token: requestToken,
       payload: buildXaiVideoPayload(model, prompt, body),
       log,
+      headers,
+      deadline: startTime + timeoutMs,
     });
     if (!created.requestId) {
-      return { success: false, status: 502, error: created.error };
+      return { success: false, status: created.status || 502, error: created.error };
     }
 
     const outcome = await pollXaiVideoJob({
       statusUrl,
       requestId: created.requestId,
-      token,
+      token: requestToken,
       deadline: startTime + timeoutMs,
       pollIntervalMs,
+      headers,
     });
 
     return buildXaiVideoResponse({
@@ -236,7 +277,12 @@ export async function handleXaiVideoGeneration({
   } catch (err: unknown) {
     return {
       success: false,
-      status: isJsonObject(err) && Number.isFinite(Number(err.status)) ? Number(err.status) : 502,
+      status:
+        err instanceof Error && ["TimeoutError", "AbortError"].includes(err.name)
+          ? 504
+          : isJsonObject(err) && Number.isFinite(Number(err.status))
+            ? Number(err.status)
+            : 502,
       error: sanitizeErrorMessage(err) || "Video provider error",
     };
   }
