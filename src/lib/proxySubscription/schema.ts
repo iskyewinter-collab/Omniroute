@@ -12,6 +12,7 @@
  */
 import { z } from "zod";
 import type { ProxySubscriptionPayload } from "./subscriptionService";
+import { isCoreConfigPathAllowed } from "./coreConfig/pathGuard";
 import { isSelectorControlUrlAllowed } from "./selectorGuard";
 import { clampSelectorGapSeconds } from "./selectorTrigger";
 
@@ -51,6 +52,28 @@ function readControlSecret(b: Record<string, unknown>): string | null | undefine
 function readGap(b: Record<string, unknown>): number {
   if (b.selectorMinGapSeconds === undefined) return 60;
   return clampSelectorGapSeconds(b.selectorMinGapSeconds);
+}
+
+function readCoreConfigPath(b: Record<string, unknown>): string | null | undefined {
+  if (b.coreConfigPath === undefined) return undefined;
+  if (typeof b.coreConfigPath !== "string" || !b.coreConfigPath.trim()) return null;
+  return b.coreConfigPath.trim();
+}
+
+function checkCoreConfigPath(
+  coreConfigPath: string | null | undefined,
+  ctx: z.RefinementCtx
+): string | null | undefined {
+  if (coreConfigPath === undefined || coreConfigPath === null) return coreConfigPath;
+  const verdict = isCoreConfigPathAllowed(coreConfigPath);
+  if (!verdict.allowed) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `coreConfigPath is not allowed (${verdict.reason})`,
+    });
+    return z.NEVER;
+  }
+  return coreConfigPath;
 }
 
 function requireNameUrl(
@@ -110,6 +133,8 @@ export const proxySubscriptionCreateSchema = z
 
     const controlUrl = checkControlUrl(readControlUrl(b), ctx);
     if (controlUrl === z.NEVER) return z.NEVER;
+    const coreConfigPath = checkCoreConfigPath(readCoreConfigPath(b), ctx);
+    if (coreConfigPath === z.NEVER) return z.NEVER;
     const controlSecret = readControlSecret(b);
     const selectorMinGapSeconds = readGap(b);
 
@@ -122,6 +147,7 @@ export const proxySubscriptionCreateSchema = z
       updateIntervalMinutes,
       enabled,
       controlUrl: controlUrl ?? null,
+      coreConfigPath: coreConfigPath ?? null,
       controlSecret: controlSecret ?? null,
       selectorMinGapSeconds,
     };
@@ -166,6 +192,11 @@ export const proxySubscriptionUpdateSchema = z
       const controlUrl = checkControlUrl(readControlUrl(b), ctx);
       if (controlUrl === z.NEVER) return z.NEVER;
       payload.controlUrl = controlUrl ?? null;
+    }
+    if (b.coreConfigPath !== undefined) {
+      const coreConfigPath = checkCoreConfigPath(readCoreConfigPath(b), ctx);
+      if (coreConfigPath === z.NEVER) return z.NEVER;
+      payload.coreConfigPath = coreConfigPath ?? null;
     }
 
     return payload;
