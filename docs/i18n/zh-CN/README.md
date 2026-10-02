@@ -1728,7 +1728,7 @@ MIT 许可证——详情请参阅 [LICENSE](LICENSE)。
 
 **[⬆ 返回顶部](#-omniroute)** · 用 ❤️ 为开源 AI 社区打造。
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT 许可证 · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT 许可证 · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- 已启用 GitHub Discussions，供社区问答 -->

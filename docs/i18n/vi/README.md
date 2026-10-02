@@ -1729,7 +1729,7 @@ Giấy phép MIT - xem [LICENSE](LICENSE) để biết chi tiết.
 
 **[⬆ Quay lại đầu trang](#-omniroute)** · Được xây dựng với ❤️ dành cho cộng đồng AI mã nguồn mở.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · Giấy phép MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · Giấy phép MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- GitHub Discussions được bật để cộng đồng hỏi đáp -->

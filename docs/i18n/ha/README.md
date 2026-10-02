@@ -1729,7 +1729,7 @@ Lasisin MIT - duba [LICENSE](LICENSE) don ƙarin bayani.
 
 **[⬆ Koma sama](#-omniroute)** · An gina shi da ❤️ domin al'ummar AI ta buɗaɗɗen tushe.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · Lasisin MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · Lasisin MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- An kunna Tattaunawar GitHub don tambayoyi da amsoshi na al'umma -->

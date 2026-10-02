@@ -1737,7 +1737,7 @@ Licența MIT - consultați [LICENSE](LICENSE) pentru detalii.
 
 **[⬆ Înapoi sus](#-omniroute)** · Creat cu ❤️ pentru comunitatea AI open-source.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · Licența MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · Licența MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- Discuțiile GitHub sunt activate pentru întrebări și răspunsuri din partea comunității -->

@@ -1738,7 +1738,7 @@ gh release create "v${VERSION}" --title "v${VERSION}" --generate-notes
 
 **[⬆ Πίσω στην κορυφή](#-omniroute)** · Φτιαγμένο με ❤️ για την κοινότητα ανοιχτού κώδικα AI.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT License · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT License · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- Οι Συζητήσεις GitHub είναι ενεργοποιημένες για ερωτήσεις και απαντήσεις της κοινότητας -->

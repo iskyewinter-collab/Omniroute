@@ -1729,7 +1729,7 @@ MIT ಪರವಾನಗಿ - ವಿವರಗಳಿಗಾಗಿ [LICENSE](LICENSE)
 
 **[⬆ ಮೇಲಕ್ಕೆ ಹಿಂತಿರುಗಿ](#-omniroute)** · ಮುಕ್ತ-ಮೂಲದ AI ಸಮುದಾಯಕ್ಕಾಗಿ ❤️ ನೊಂದಿಗೆ ನಿರ್ಮಿಸಲಾಗಿದೆ.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT ಪರವಾನಗಿ · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT ಪರವಾನಗಿ · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- ಸಮುದಾಯದ ಪ್ರಶ್ನೋತ್ತರಕ್ಕಾಗಿ GitHub Discussions ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ -->

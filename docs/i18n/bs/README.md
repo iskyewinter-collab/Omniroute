@@ -1744,7 +1744,7 @@ MIT licenca – pogledajte [LICENSE](LICENSE) za detalje.
 
 **[⬆ Nazad na vrh](#-omniroute)** · Napravljeno s ❤️ za AI zajednicu otvorenog koda.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT licenca · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT licenca · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- GitHub Discussions je omogućen za pitanja i odgovore zajednice -->

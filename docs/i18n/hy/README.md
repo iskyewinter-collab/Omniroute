@@ -1729,7 +1729,7 @@ MIT լիցենզիա — մանրամասների համար տե՛ս [LICENSE](
 
 **[⬆ Վերադառնալ վերև](#-omniroute)** · Ստեղծված է ❤️-ով՝ բաց կոդով AI համայնքի համար։
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT լիցենզիա · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT լիցենզիա · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- GitHub Discussions-ը միացված է համայնքի հարցուպատասխանի համար -->

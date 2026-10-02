@@ -1729,7 +1729,7 @@ MIT లైసెన్స్ — వివరాల కోసం [LICENSE](LICEN
 
 **[⬆ పైకి తిరిగి వెళ్లండి](#-omniroute)** · ఓపెన్-సోర్స్ AI కమ్యూనిటీ కోసం ❤️తో రూపొందించబడింది.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT లైసెన్స్ · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT లైసెన్స్ · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- కమ్యూనిటీ ప్రశ్నలు మరియు సమాధానాల కోసం GitHub Discussions ప్రారంభించబడ్డాయి -->

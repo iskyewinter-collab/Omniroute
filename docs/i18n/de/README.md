@@ -1738,7 +1738,7 @@ MIT-Lizenz – Details finden Sie unter [LICENSE](LICENSE).
 
 **[⬆ Zurück nach oben](#-omniroute)** · Mit ❤️ für die Open-Source-KI-Community entwickelt.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT-Lizenz · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT-Lizenz · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- GitHub Discussions für Fragen und Antworten der Community aktiviert -->

@@ -1662,7 +1662,7 @@ Leseni ya MIT - tazama [LICENSE](LICENSE) kwa maelezo.
 
 **[⬆ Rudi juu](#-omniroute)** · Imetengenezwa kwa ❤️ kwa ajili ya jumuiya ya AI ya programu huria.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · Leseni ya MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · Leseni ya MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- Majadiliano ya GitHub yamewezeshwa kwa maswali na majibu ya jumuiya -->

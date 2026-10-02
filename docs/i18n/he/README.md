@@ -1729,7 +1729,7 @@ OmniRoute עומד על כתפי ענקים. הוא התחיל כפיצול של
 
 **[⬆ חזרה לראש העמוד](#-omniroute)** · נבנה באהבה ❤️ עבור קהילת הבינה המלאכותית בקוד פתוח.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · רישיון MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · רישיון MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- דיוני GitHub מופעלים עבור שאלות ותשובות של הקהילה -->

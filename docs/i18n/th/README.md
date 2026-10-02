@@ -1729,7 +1729,7 @@ OmniRoute ยืนอยู่บนบ่าของยักษ์ใหญ�
 
 **[⬆ กลับไปด้านบน](#-omniroute)** · สร้างขึ้นด้วย ❤️ เพื่อชุมชน AI แบบโอเพนซอร์ส
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · ใบอนุญาต MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · ใบอนุญาต MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- เปิดใช้งาน GitHub Discussions สำหรับคำถามและคำตอบของชุมชน -->

@@ -1729,7 +1729,7 @@ MIT-licenc – a részletekért lásd: [LICENSE](LICENSE).
 
 **[⬆ Vissza a tetejére](#-omniroute)** · ❤️-vel készült a nyílt forráskódú MI-közösség számára.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT-licenc · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT-licenc · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- A GitHub Discussions engedélyezve van a közösségi kérdésekhez és válaszokhoz -->

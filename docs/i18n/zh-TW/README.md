@@ -1728,7 +1728,7 @@ MIT 授權條款 - 詳情請參閱 [LICENSE](LICENSE)。
 
 **[⬆ 返回頂部](#-omniroute)** · 用 ❤️ 為開源 AI 社群打造。
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT 授權條款 · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT 授權條款 · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- 已啟用 GitHub Discussions，供社群問答使用 -->

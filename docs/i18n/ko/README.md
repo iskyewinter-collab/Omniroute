@@ -1728,7 +1728,7 @@ MIT 라이선스 - 자세한 내용은 [LICENSE](LICENSE)를 참조하세요.
 
 **[⬆ 맨 위로 돌아가기](#-omniroute)** · 오픈 소스 AI 커뮤니티를 위해 ❤️를 담아 만들었습니다.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT 라이선스 · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT 라이선스 · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- 커뮤니티 Q&A를 위해 GitHub Discussions가 활성화되어 있습니다 -->

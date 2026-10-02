@@ -1729,7 +1729,7 @@ Lisensyang MIT - tingnan ang [LICENSE](LICENSE) para sa mga detalye.
 
 **[⬆ Bumalik sa itaas](#-omniroute)** · Binuo nang may ❤️ para sa open-source na komunidad ng AI.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · Lisensyang MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · Lisensyang MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- Pinagana ang GitHub Discussions para sa mga tanong at sagot ng komunidad -->

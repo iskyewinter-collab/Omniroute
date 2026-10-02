@@ -1729,7 +1729,7 @@ OmniRoute стоїть на плечах гігантів. Він розпоча
 
 **[⬆ Повернутися нагору](#-omniroute)** · Створено з ❤️ для спільноти ШІ з відкритим кодом.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · Ліцензія MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · Ліцензія MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- GitHub Discussions увімкнено для запитань і відповідей спільноти -->

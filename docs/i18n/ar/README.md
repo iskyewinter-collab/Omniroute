@@ -1729,7 +1729,7 @@ gh release create "v${VERSION}" --title "v${VERSION}" --generate-notes
 
 **[⬆ العودة إلى الأعلى](#-omniroute)** · صُنع بكل ❤️ لمجتمع الذكاء الاصطناعي مفتوح المصدر.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · ترخيص MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · ترخيص MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- تم تفعيل GitHub Discussions لأسئلة وأجوبة المجتمع -->

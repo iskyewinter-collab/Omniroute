@@ -1729,7 +1729,7 @@ MIT লাইসেন্স - বিস্তারিত জানতে [LICE
 
 **[⬆ উপরে ফিরে যান](#-omniroute)** · ওপেন-সোর্স AI কমিউনিটির জন্য ❤️ দিয়ে তৈরি।
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT লাইসেন্স · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT লাইসেন্স · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- কমিউনিটির প্রশ্নোত্তরের জন্য GitHub Discussions সক্রিয় করা হয়েছে -->

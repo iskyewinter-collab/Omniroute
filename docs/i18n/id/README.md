@@ -1726,7 +1726,7 @@ Lisensi MIT - lihat [LICENSE](LICENSE) untuk detailnya.
 
 **[⬆ Kembali ke atas](#-omniroute)** · Dibuat dengan ❤️ untuk komunitas AI sumber terbuka.
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · Lisensi MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · Lisensi MIT · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- GitHub Discussions diaktifkan untuk tanya jawab komunitas -->

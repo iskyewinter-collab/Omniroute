@@ -1731,7 +1731,7 @@ MIT License - အသေးစိတ်အချက်အလက်များအ
 
 **[⬆ အပေါ်သို့ ပြန်သွားရန်](#-omniroute)** · Open-source AI အသိုင်းအဝိုင်းအတွက် ❤️ ဖြင့် ဖန်တီးထားသည်။
 
-<sub>OmniRoute v3.8.51 · Node ≥22.22.2 · MIT License · <a href="https://omniroute.online">omniroute.online</a></sub>
+<sub>OmniRoute v3.8.52 · Node ≥22.22.2 · MIT License · <a href="https://omniroute.online">omniroute.online</a></sub>
 
 </div>
 <!-- အသိုင်းအဝိုင်း၏ အမေးအဖြေများအတွက် GitHub Discussions ကို ဖွင့်ထားသည် -->
