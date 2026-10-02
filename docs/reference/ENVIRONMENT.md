@@ -374,6 +374,14 @@ OmniRoute provides a two-layer defense: request-side injection scanning and resp
 
 Route upstream LLM provider calls through an HTTP or SOCKS5 proxy for egress control, geo-routing, or IP masking.
 
+`OMNIROUTE_UPSTREAM_HTTP2_ENABLED` defaults to `true`. Set it to `false`, `0`, `no`, or
+`off` to force HTTP/1.1 on the Undici dispatchers in `open-sse/utils/proxyDispatcher.ts`
+and `open-sse/utils/proxyFetch.ts`: direct egress, HTTP(S)/SOCKS proxies, relays, and
+their fresh-socket retries. This preserves TLS certificate verification, proxy
+authentication, connection limits, and keep-alive settings. Restart OmniRoute after
+changing it because dispatchers are cached and relay agents are created at startup.
+The switch does not control wreq TLS fingerprinting or provider-specific transports.
+
 | Variable                                 | Default   | Source File                                  | Description                                                                                                                                                                                                                                                                                                                                         |
 | ---------------------------------------- | --------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ENABLE_SOCKS5_PROXY`                    | `true`    | `open-sse/executors`                         | Enable SOCKS5 proxy agent for upstream calls. Opt-out with `false`.                                                                                                                                                                                                                                                                                 |
