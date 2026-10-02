@@ -3323,6 +3323,16 @@ paths:
                 localCoreEndpoint:
                   type: string
                   nullable: true
+                coreConfigPath:
+                  type: string
+                  nullable: true
+                  description: >-
+                    Absolute adopted sing-box config path (lowercase .json).
+                    Empty means no generation; each sync writes
+                    `<path>.generated` beside it; when the host sets
+                    `OMNIROUTE_PROXY_CORE_BINARY_PATH` the file is checked
+                    with the core binary and then replaces the adopted file.
+                    The binary path is never accepted through the API.
                 updateIntervalMinutes:
                   type: integer
                   default: 60
@@ -3369,7 +3379,7 @@ paths:
       summary: Update a proxy subscription
       description: >-
         Partial update — only fields present in the body are changed
-        (name/url/mode/ruleProviders/localCoreEndpoint/updateIntervalMinutes/enabled).
+        (name/url/mode/ruleProviders/localCoreEndpoint/coreConfigPath/updateIntervalMinutes/enabled).
       security:
         - ManagementSessionAuth: []
       parameters:
@@ -3393,6 +3403,9 @@ paths:
                   items:
                     type: string
                 localCoreEndpoint:
+                  type: string
+                  nullable: true
+                coreConfigPath:
                   type: string
                   nullable: true
                 updateIntervalMinutes:
@@ -15022,6 +15035,12 @@ components:
         localCoreEndpoint:
           type: string
           nullable: true
+        coreConfigPath:
+          type: string
+          nullable: true
+          description: >-
+            Absolute adopted sing-box config path (lowercase .json).
+            Empty means no generation.
         updateIntervalMinutes:
           type: integer
         lastFetchedAt:

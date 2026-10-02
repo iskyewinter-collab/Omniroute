@@ -25,7 +25,7 @@ export interface OpenApiEndpoint {
   hasRequestBody: boolean;
 }
 
-export const OPENAPI_VERSION = "3.8.51";
+export const OPENAPI_VERSION = "3.8.52";
 export const OPENAPI_TITLE = "OmniRoute API";
 
 export const OPENAPI_ENDPOINTS: OpenApiEndpoint[] = [
@@ -603,7 +603,7 @@ export const OPENAPI_ENDPOINTS: OpenApiEndpoint[] = [
     path: "/api/v1/management/proxy-subscriptions/{id}",
     method: "PATCH",
     summary: "Update a proxy subscription",
-    description: "Partial update — only fields present in the body are changed (name/url/mode/ruleProviders/localCoreEndpoint/updateIntervalMinutes/enabled).",
+    description: "Partial update — only fields present in the body are changed (name/url/mode/ruleProviders/localCoreEndpoint/coreConfigPath/coreBinaryPath/updateIntervalMinutes/enabled).",
     tag: "Proxy Subscriptions",
     tags: ["Proxy Subscriptions"],
     requiresAuth: true,
