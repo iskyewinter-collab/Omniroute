@@ -6964,17 +6964,14 @@
       "nextSwitchNow": "現在",
       "coreConfigPath": "Core config file",
       "coreConfigPathPlaceholder": "/var/lib/omniroute/sing-box/config.json",
-      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file, never into it.",
+      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file. When the host sets OMNIROUTE_PROXY_CORE_BINARY_PATH, the generated file is checked with the core binary and then replaces the adopted file.",
       "lastSwitchKind": "Switch reason",
       "switchKind": {
         "ip_quota_429": "quota",
         "proxy_unreachable": "unreachable",
         "transport": "transport",
         "slow": "slow"
-      },
-      "coreBinaryPath": "核心二進位路徑",
-      "coreBinaryPathPlaceholder": "/usr/bin/sing-box",
-      "coreBinaryPathHelp": "選用：在取代已採用檔案之前，先以核心二進位檔驗證產生的檔案。留空則繼續寫在旁邊。若目錄不存在會自動建立。"
+      }
     },
     "bulkHealthcheck": "批次健康檢查",
     "bulkHealthcheckDesc": "針對目標 URL 測試所有已設定代理，找出可用代理。",

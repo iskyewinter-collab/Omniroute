@@ -6964,17 +6964,14 @@
       "nextSwitchNow": "지금",
       "coreConfigPath": "Core config file",
       "coreConfigPathPlaceholder": "/var/lib/omniroute/sing-box/config.json",
-      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file, never into it.",
+      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file. When the host sets OMNIROUTE_PROXY_CORE_BINARY_PATH, the generated file is checked with the core binary and then replaces the adopted file.",
       "lastSwitchKind": "Switch reason",
       "switchKind": {
         "ip_quota_429": "quota",
         "proxy_unreachable": "unreachable",
         "transport": "transport",
         "slow": "slow"
-      },
-      "coreBinaryPath": "코어 바이너리 경로",
-      "coreBinaryPathPlaceholder": "/usr/bin/sing-box",
-      "coreBinaryPathHelp": "선택 사항: 채택된 파일을 교체하기 전에 코어 바이너리로 생성된 파일을 검증합니다. 비워 두면 옆에 계속 씁니다. 디렉터리가 없으면 생성됩니다."
+      }
     },
     "bulkHealthcheck": "일괄 상태 확인",
     "bulkHealthcheckDesc": "구성된 모든 프록시를 대상 URL에 대해 테스트하여 작동하는 프록시를 찾습니다.",

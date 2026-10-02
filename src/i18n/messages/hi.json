@@ -6964,17 +6964,14 @@
       "nextSwitchNow": "अभी",
       "coreConfigPath": "Core config file",
       "coreConfigPathPlaceholder": "/var/lib/omniroute/sing-box/config.json",
-      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file, never into it.",
+      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file. When the host sets OMNIROUTE_PROXY_CORE_BINARY_PATH, the generated file is checked with the core binary and then replaces the adopted file.",
       "lastSwitchKind": "Switch reason",
       "switchKind": {
         "ip_quota_429": "quota",
         "proxy_unreachable": "unreachable",
         "transport": "transport",
         "slow": "slow"
-      },
-      "coreBinaryPath": "कोर बाइनरी पथ",
-      "coreBinaryPathPlaceholder": "/usr/bin/sing-box",
-      "coreBinaryPathHelp": "वैकल्पिक: अपनाई गई फ़ाइल को बदलने से पहले कोर बाइनरी से जनरेट की गई फ़ाइल सत्यापित करता है। बगल में लिखना जारी रखने के लिए खाली छोड़ें। निर्देशिका अनुपस्थित होने पर बनाई जाती है।"
+      }
     },
     "bulkHealthcheck": "सामूहिक स्वास्थ्य जाँच",
     "bulkHealthcheckDesc": "यह पता लगाने के लिए कि कौन-से प्रॉक्सी काम करते हैं, सभी कॉन्फ़िगर किए गए प्रॉक्सी का लक्ष्य URL के विरुद्ध परीक्षण करें।",

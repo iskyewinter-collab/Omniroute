@@ -249,10 +249,11 @@ function swapCandidate(
 }
 
 /**
- * Best-effort removal of the side files a deleted subscription owned
- * (adopted + beside). The caller passes the already-read adopted path
- * (the row is gone by the time this runs). Missing or locked files must
- * not fail the delete. Never throws.
+ * Best-effort removal of the beside copy a deleted subscription owned. The
+ * adopted file itself is the operator's live core configuration and is never
+ * removed here. The caller passes the already-read adopted path (the row is
+ * gone by the time this runs). Missing or locked files must not fail the
+ * delete. Never throws.
  */
 export function removeSubscriptionSideFiles(
   deps: { unlinkSync: (p: string) => void },
@@ -260,9 +261,7 @@ export function removeSubscriptionSideFiles(
   subscriptionId: string
 ): void {
   if (typeof adoptedPath !== "string" || !adoptedPath.trim()) return;
-  const target = adoptedPath.trim();
-  removeSideFile(deps, target, subscriptionId);
-  removeSideFile(deps, `${target}.generated`, subscriptionId);
+  removeSideFile(deps, `${adoptedPath.trim()}.generated`, subscriptionId);
 }
 
 /**

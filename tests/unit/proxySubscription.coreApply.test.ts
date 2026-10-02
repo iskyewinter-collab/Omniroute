@@ -473,30 +473,3 @@ test("two subscriptions sharing one path do not collide on the candidate", async
     []
   );
 });
-
-test("migration file carries the additive binary column", async () => {
-  const migration = fs.readFileSync(
-    new URL("../../src/lib/db/migrations/198_proxy_subscription_core_binary.sql", import.meta.url),
-    "utf8"
-  );
-  assert.match(migration, /ADD COLUMN core_binary_path TEXT/);
-  const { DatabaseSync } = await import("node:sqlite");
-  const dir = makeDir();
-  const dbFile = path.join(dir, "replay.db");
-  const db = new DatabaseSync(dbFile);
-  try {
-    db.exec("CREATE TABLE proxy_subscriptions (id TEXT PRIMARY KEY)");
-    // First apply, then verify the runner-level guard (tracked applied
-    // versions are never re-executed, so the ADD COLUMN runs once).
-    db.exec(migration);
-    const columns = db.prepare("PRAGMA table_info(proxy_subscriptions)").all() as Array<{
-      name: string;
-    }>;
-    assert.equal(columns.filter((c) => c.name === "core_binary_path").length, 1);
-  } finally {
-    try {
-      db.close();
-    } catch {}
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
-});

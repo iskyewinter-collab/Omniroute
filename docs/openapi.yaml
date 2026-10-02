@@ -3329,14 +3329,10 @@ paths:
                   description: >-
                     Absolute adopted sing-box config path (lowercase .json).
                     Empty means no generation; each sync writes
-                    `<path>.generated` beside it, never into it.
-                coreBinaryPath:
-                  type: string
-                  nullable: true
-                  description: >-
-                    Absolute path of the core binary used to verify the
-                    generated file before replacing the adopted file.
-                    Empty means write beside it only.
+                    `<path>.generated` beside it; when the host sets
+                    `OMNIROUTE_PROXY_CORE_BINARY_PATH` the file is checked
+                    with the core binary and then replaces the adopted file.
+                    The binary path is never accepted through the API.
                 updateIntervalMinutes:
                   type: integer
                   default: 60
@@ -3383,7 +3379,7 @@ paths:
       summary: Update a proxy subscription
       description: >-
         Partial update — only fields present in the body are changed
-        (name/url/mode/ruleProviders/localCoreEndpoint/coreConfigPath/coreBinaryPath/updateIntervalMinutes/enabled).
+        (name/url/mode/ruleProviders/localCoreEndpoint/coreConfigPath/updateIntervalMinutes/enabled).
       security:
         - ManagementSessionAuth: []
       parameters:
@@ -3410,9 +3406,6 @@ paths:
                   type: string
                   nullable: true
                 coreConfigPath:
-                  type: string
-                  nullable: true
-                coreBinaryPath:
                   type: string
                   nullable: true
                 updateIntervalMinutes:
@@ -15048,13 +15041,6 @@ components:
           description: >-
             Absolute adopted sing-box config path (lowercase .json).
             Empty means no generation.
-        coreBinaryPath:
-          type: string
-          nullable: true
-          description: >-
-            Absolute path of the core binary used to verify the generated
-            file before replacing the adopted file. Null means write
-            beside it only.
         updateIntervalMinutes:
           type: integer
         lastFetchedAt:

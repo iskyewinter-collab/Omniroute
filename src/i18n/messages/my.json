@@ -6964,17 +6964,14 @@
       "nextSwitchNow": "ယခု",
       "coreConfigPath": "Core config file",
       "coreConfigPathPlaceholder": "/var/lib/omniroute/sing-box/config.json",
-      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file, never into it.",
+      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file. When the host sets OMNIROUTE_PROXY_CORE_BINARY_PATH, the generated file is checked with the core binary and then replaces the adopted file.",
       "lastSwitchKind": "Switch reason",
       "switchKind": {
         "ip_quota_429": "quota",
         "proxy_unreachable": "unreachable",
         "transport": "transport",
         "slow": "slow"
-      },
-      "coreBinaryPath": "Core binary path",
-      "coreBinaryPathPlaceholder": "/usr/bin/sing-box",
-      "coreBinaryPathHelp": "Optional: verifies the generated file with the core binary before replacing the adopted file. Leave empty to keep writing beside it. The directory is created when missing."
+      }
     },
     "bulkHealthcheck": "အစုလိုက် အခြေအနေစစ်ဆေးမှု",
     "bulkHealthcheckDesc": "အလုပ်လုပ်သည့် ပရောက်စီများကို ရှာဖွေရန် စီစဉ်သတ်မှတ်ထားသော ပရောက်စီအားလုံးကို ပစ်မှတ် URL တစ်ခုဖြင့် စမ်းသပ်ပါ။",

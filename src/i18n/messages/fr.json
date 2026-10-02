@@ -6964,17 +6964,14 @@
       "nextSwitchNow": "Maintenant",
       "coreConfigPath": "Core config file",
       "coreConfigPathPlaceholder": "/var/lib/omniroute/sing-box/config.json",
-      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file, never into it.",
+      "coreConfigPathDesc": "Absolute .json path (lowercase extension). Empty = no generation. Each sync writes '<path>'.generated beside the adopted file. When the host sets OMNIROUTE_PROXY_CORE_BINARY_PATH, the generated file is checked with the core binary and then replaces the adopted file.",
       "lastSwitchKind": "Switch reason",
       "switchKind": {
         "ip_quota_429": "quota",
         "proxy_unreachable": "unreachable",
         "transport": "transport",
         "slow": "slow"
-      },
-      "coreBinaryPath": "Chemin du binaire du cœur",
-      "coreBinaryPathPlaceholder": "/usr/bin/sing-box",
-      "coreBinaryPathHelp": "Optionnel : vérifie le fichier généré avec le binaire du cœur avant de remplacer le fichier adopté. Laissez vide pour continuer à écrire à côté. Le répertoire est créé s'il manque."
+      }
     },
     "bulkHealthcheck": "Vérification groupée de l’état",
     "bulkHealthcheckDesc": "Testez tous les proxys configurés avec une URL cible afin d’identifier ceux qui fonctionnent.",
