@@ -348,7 +348,12 @@ describe("catalog capability presets", () => {
     console.warn = (...args: unknown[]) => {
       warns.push(String(args[0]));
     };
-    return { warns, restore() { console.warn = origWarn; } };
+    return {
+      warns,
+      restore() {
+        console.warn = origWarn;
+      },
+    };
   }
 
   it("freeOnly keeps only models with a free-tier enrichment entry", async () => {
@@ -416,16 +421,15 @@ describe("catalog capability presets", () => {
       { ...baseOpts, freeOnly: true },
       {
         fetcher: async () => [{ id: "m1" }],
-        enrichmentFetcher: async () =>
-          new Map([["m1", { freeType: "keyless" as const }]]),
+        enrichmentFetcher: async () => new Map([["m1", { freeType: "keyless" as const }]]),
         combosFetcher: async () => [
-          { id: "c1", name: "C1", models: [{ kind: "model", model: "m1" }] },
+          { id: "combo-a", name: "Combo A", models: [{ kind: "model", model: "m1" }] },
         ],
       }
     );
     assert.equal(res.models, 1);
     assert.equal(res.combos, 0);
-    assert.ok(!draft.models.has("omniroute/c1"));
+    assert.ok(!draft.models.has("omniroute/combo-a"));
   });
 
   it("toolsOnly keeps only tool-calling models", async () => {
@@ -452,12 +456,16 @@ describe("catalog capability presets", () => {
       draft,
       { ...baseOpts, toolsOnly: true },
       {
-        fetcher: async () => [
-          { id: "a", capabilities: { tool_calling: true } },
-          { id: "b" },
-        ],
+        fetcher: async () => [{ id: "a", capabilities: { tool_calling: true } }, { id: "b" }],
         combosFetcher: async () => [
-          { id: "mixed", name: "Mixed", models: [{ kind: "model", model: "a" }, { kind: "model", model: "b" }] },
+          {
+            id: "mixed",
+            name: "Mixed",
+            models: [
+              { kind: "model", model: "a" },
+              { kind: "model", model: "b" },
+            ],
+          },
           { id: "pure", name: "Pure", models: [{ kind: "model", model: "a" }] },
         ],
       }
@@ -567,15 +575,19 @@ describe("catalog capability presets", () => {
     assert.ok(draft.models.has("omniroute/cc/good"));
   });
 
-  it("defaults without flags publish the full catalog", async () => {
+  it("toolsOnly: false opts out and publishes the full catalog", async () => {
     const draft = fakeDraft();
-    const res = await publishCatalog(draft, baseOpts, {
-      fetcher: async () => [
-        { id: "paid", capabilities: { tool_calling: true }, input_modalities: ["text", "image"] },
-        { id: "plain" },
-      ],
-      combosFetcher: async () => [],
-    });
+    const res = await publishCatalog(
+      draft,
+      { ...baseOpts, toolsOnly: false },
+      {
+        fetcher: async () => [
+          { id: "paid", capabilities: { tool_calling: true }, input_modalities: ["text", "image"] },
+          { id: "plain" },
+        ],
+        combosFetcher: async () => [],
+      }
+    );
     assert.deepEqual(res, { models: 2, combos: 0, autoCombos: 0 });
   });
 
