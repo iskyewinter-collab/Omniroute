@@ -27,6 +27,10 @@ import {
 } from "../helpers/geminiHelper.ts";
 import { buildGeminiTools, sanitizeGeminiToolName } from "../helpers/geminiToolsSanitizer.ts";
 import {
+  normalizeGeminiToolCallIds,
+  validateChronologicalToolCallIds,
+} from "./openai-to-gemini/toolCallIds.ts";
+import {
   type GeminiGenerationConfig,
   isVertexGeminiProvider,
   buildChangedToolNameMap,
@@ -377,6 +381,7 @@ function openaiToGeminiBase(
   // OpenCode's known abort/cancel bug) reaches Google's Cloud Code envelope as an unpaired
   // functionCall, which Vertex's Claude backend rejects with HTTP 400.
   const rawMessages = body.messages as Array<Record<string, unknown>> | undefined;
+  validateChronologicalToolCallIds(rawMessages);
   const messages =
     rawMessages && Array.isArray(rawMessages)
       ? (fixToolPairs(rawMessages) as Array<Record<string, unknown>>)
@@ -655,6 +660,8 @@ function openaiToGeminiBase(
   // Guard the one alternation violation the merge above cannot reach: history
   // that opens with a functionCall-bearing turn instead of a user turn.
   result.contents = ensureHistoryDoesNotOpenWithFunctionCall(result.contents);
+  // Signatures must be resolved using client IDs before assigning unique wire IDs (#15312).
+  result.contents = normalizeGeminiToolCallIds(result.contents);
 
   // Convert tools
   const bodyTools = body.tools as Array<Record<string, unknown>> | undefined;
