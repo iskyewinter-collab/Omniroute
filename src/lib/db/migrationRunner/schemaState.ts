@@ -51,7 +51,7 @@ export function stripExistingAddColumns(
  * Follow-up for a migration file that failed with "duplicate column name": runs the file again
  * without the `ADD COLUMN` statements that already landed, then records the ledger row.
  * Returns the skipped `table.column` names. When nothing can be skipped (or the file isn't
- * plain SQL), only the ledger row is written.
+ * plain SQL), or the replay fails for any reason, only the ledger row is written.
  */
 export function applyMigrationSkippingExistingColumns(
   db: SqliteAdapter,
@@ -76,14 +76,14 @@ export function applyMigrationSkippingExistingColumns(
       record();
     })();
   } catch (err: unknown) {
+    // The replay runs in one transaction, so a failure leaves nothing half-applied. Any failure
+    // (another duplicate column, a CREATE TABLE/INDEX that already exists, ...) means the schema
+    // is ahead of the ledger: fall back to the marker-only behaviour the runner always had, so
+    // an idempotent leftover never aborts boot. If even the ledger write fails, that throws.
     const message = err instanceof Error ? err.message : String(err);
-    if (!message.includes("duplicate column name")) {
-      console.error(`[Migration] FAILED: ${migration.version}_${migration.name} — ${message}`);
-      throw err;
-    }
     console.warn(
-      `[Migration] ${migration.version}_${migration.name}: another column already exists ` +
-        `(${message}); recording the migration without replaying it.`
+      `[Migration] ${migration.version}_${migration.name}: replay without the existing columns ` +
+        `failed (${message}); recording the migration without replaying it.`
     );
     db.transaction(record)();
   }
